@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="author" content="Seth Bertlshofer" />
+
+        <title>Mazes</title>
+
+        <link rel="stylesheet" href="styles.css" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+        <script type="text/javascript" src="./js/gameLoop.js"></script>
+        <script type="text/javascript" src="./js/mazeGeneration.js"></script>
+    </head>
+    <body>
+        <div id="main-window">
+            <h1> Mazes </h1>
+            <!--<canvas id="canvas" width="400" height="400"></canvas>-->
+            <div id="logic-section">
+                <textarea id="output-section" readonly></textarea>
+                <div id="input-section">
+                    <label for="event-name">Event Name:</label><div><input id="event-name" class="inputs" type="text" required/></div>
+                    <label for="interval">Interval:</label><div><input id="interval" class="inputs" type="text" required/></div>
+                    <label for="repeat"># Times:</label><div><input id="repeat" class="inputs" type="text" required/></div>
+                    <button type="button" onclick="gameLoop.addEvent();">Add Event</button>
+                </div>
+            </div>
+            <h4> Created by Seth Bertlshofer A00933231 </h4>
+        </div>
+    </body>
+</html>

@@ -1,0 +1,20 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch Chrome against localhost",
+            "type": "chrome",
+            "request": "attach",
+            "port": 9222,
+            "url": "${workspaceRoot}/index.html"
+        },
+        {
+            "name": "Attach to Chrome",
+            "type": "chrome",
+            "request": "attach",
+            "port": 9222,
+            "url": "${workspaceRoot}/index.html",
+            "webRoot": "${workspaceRoot}"
+        }
+    ]
+}
