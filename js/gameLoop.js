@@ -1,8 +1,9 @@
-var gameLoop = (()=>{
+var GameLoop = (()=>{
     'use strict';
 
     var prevTime = 0;
     var events = [];
+    var canvas;
 
     function gameLoop(time) {
         let elapsedTime = time - prevTime;
@@ -43,22 +44,16 @@ var gameLoop = (()=>{
     }
 
     function addEvent(){
-        let eventName = document.getElementById('event-name').value;
-        let interval = parseInt(document.getElementById('interval').value);
-        let repeat = parseInt(document.getElementById('repeat').value);
-
         events.push({eventName, interval, repeat, time: 0});
-
-        document.getElementById('event-name').value = "";
-        document.getElementById('interval').value = "";
-        document.getElementById('repeat').value = "";
     }
 
     window.onload=()=>{
         window.requestAnimationFrame(gameLoop);
+        canvas = document.getElementById('canvas');
     };
 
     return {
-        addEvent
+        addEvent,
+        canvas
     };
 })();

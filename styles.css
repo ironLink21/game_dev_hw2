@@ -3,33 +3,12 @@
     margin: auto;
 }
 
-#logic-section {
-    width: 100%;
-    display: inline-flex
-}
-
-#output-section {
-    width: 50%;
-    height: 200px;
-    max-width: 400px;
-    max-height: 600px;
-    color: #FFF;
-    background-color: #000;
-    padding: 5px;
-}
-
-#input-section {
-    width: 50%;
-    max-width: 400px;
-    padding: 5px;
-}
-
-.inputs {
-    margin: 5px;
-}
-
 h1, h4 {
     text-align: center;
     color: #FFF;
     background-color: blue;
+}
+
+#canvas {
+    border: 1px solid #000;
 }
