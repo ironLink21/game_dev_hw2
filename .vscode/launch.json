@@ -2,7 +2,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch index.html",
+            "name": "Launch mazeGame",
             "type": "chrome",
             "request": "launch",
             "sourceMaps": false,
