@@ -7,7 +7,7 @@
             "request": "launch",
             "sourceMaps": false,
             "file": "${workspaceRoot}/index.html",
-            "runtimeExecutable": "/usr/bin/chromium"
+            "runtimeExecutable": "/usr/bin/chromium-vscode"
         }
     ]
 }
