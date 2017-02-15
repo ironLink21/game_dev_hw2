@@ -3,6 +3,7 @@ var GameLoop = (()=>{
 
     var prevTime = 0;
     var events = [];
+    var game;
 
     function gameLoop(time) {
         let elapsedTime = time - prevTime;
@@ -41,7 +42,7 @@ var GameLoop = (()=>{
             }
         });
 
-        MazeGame.draw();
+        game.draw();
     }
 
     function addEvent(){
@@ -50,7 +51,8 @@ var GameLoop = (()=>{
 
     window.onload=()=>{
         window.requestAnimationFrame(gameLoop);
-        MazeGame.CreateMaze(10);
+        game = new MazeGame(5);
+        // game.shortestPath();
     };
 
     return {

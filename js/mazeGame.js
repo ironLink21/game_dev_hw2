@@ -1,174 +1,228 @@
-var MazeGame = (()=>{
-    'use strict';
+'use strict';
 
-    const N = 'N';
-    const S = 'S';
-    const E = 'E';
-    const W = 'W';
-    const OPPOSITE = {N:S, S:N, E:W, W:E};
+class MazeGame {
+    constructor(size) {
+        this.OPPOSITE = {N:'S', S:'N', E:'W', W:'E'};
+        this.canvas = document.getElementById('canvas');
+        this.context = this.canvas.getContext('2d');
+        this.startCell = null;
+        this.endCell = null;
+        this.inMaze = [];
+        this.frontiers = [];
+        this.size = size;
 
-    var grid;
-    var currCell;
-    var context;
-    var maze = [];
-    var frontiers = [];
-
-// ****** helper functions ******
-    function randomProperty(obj) {
-        let keys = Object.keys(obj);
-        let dir = keys[ keys.length * Math.random() << 0];
-        let cell = obj[dir];
-        return {dir, cell};
-    }
-// ****** helper functions end ******
-
-// ****** initializations ******
-    function init(size = 5) {
-        let canvas = document.getElementById('canvas');
-        context = canvas.getContext('2d');
-
-        CanvasRenderingContext2D.prototype.clear = function() {
+        CanvasRenderingContext2D.prototype.clear=()=>{
             this.save();
             this.setTransform(1, 0, 0, 1, 0, 0);
-            this.clearRect(0, 0, canvas.width, canvas.height);
+            this.clearRect(0, 0, this.canvas.width, this.canvas.height);
             this.restore();
         };
 
-        initGrid(size);
+        this.maze = this.initMaze(size);
 
-        let x = Math.floor((Math.random() * grid.length-1) + 1);
-        let y = Math.floor((Math.random() * grid.length-1) + 1);
+        let x = Math.floor((Math.random() * this.maze.length-1) + 1);
+        let y = Math.floor((Math.random() * this.maze.length-1) + 1);
 
-        currCell = createCell({location:{x, y}});
-        mark(currCell);
+        this.currCell = this.createCell({location:{x, y}});
+        this.mark(this.currCell);
+
+        this.createMaze();
     }
 
-    function initGrid(size) {
-        grid = [];
+    initMaze(size) {
+        let maze = [];
         for(let i = 0; i < size; i++) {
             let cols = [];
             for(let j = 0; j < size; j++) {
                 cols[j] = 0;
             }
-            grid[i] = cols;
+            maze[i] = cols;
         }
+        return maze;
     }
-// ****** initializations end ******
+
+// ****** helper functions ******
+    randomProperty(obj) {
+        let keys = Object.keys(obj);
+        let dir = keys[ keys.length * Math.random() << 0];
+        let cell = obj[dir];
+        return {dir, cell};
+    }
+
+    heuristic(pos0, pos1) {
+		// This is the Manhattan distance
+		let d1 = Math.abs(pos1.x - pos0.x);
+		let d2 = Math.abs(pos1.y - pos0.y);
+		return d1 + d2;
+	}
+// ****** helper functions end ******
 
 // ****** maze functions ******
-    function addFrontier(x, y) {
-        let index = _.findIndex(frontiers, {x, y});
-        if(x >= 0 && y >= 0 && y < grid.length && x < grid.length && index === -1 && grid[x][y] === 0) {
-            frontiers.push({x, y});
+    addFrontier(x, y) {
+        let index = _.findIndex(this.frontiers, {x, y});
+        if(x >= 0 && y >= 0 && y < this.maze.length && x < this.maze.length && index === -1 && this.maze[x][y] === 0) {
+            this.frontiers.push({x, y});
         }
     }
 
-    function findNeighbors(cell) {
+    findNeighbors(cell) {
         let x = cell.location.x;
         let y = cell.location.y;
         let neighbors = {};
 
-        if(y > 0 && _.findIndex(maze, grid[x][y-1]) !== -1) {
+        if(y > 0 && _.findIndex(this.inMaze, this.maze[x][y-1]) !== -1) {
             neighbors.N = {x, y:y-1};
         }
 
-        if(x+1 < grid.length && _.findIndex(maze, grid[x+1][y]) !== -1) {
+        if(x+1 < this.maze.length && _.findIndex(this.inMaze, this.maze[x+1][y]) !== -1) {
             neighbors.E = {x:x+1, y};
         }
 
-        if(y+1 < grid.length && _.findIndex(maze, grid[x][y+1]) !== -1) {
+        if(y+1 < this.maze.length && _.findIndex(this.inMaze, this.maze[x][y+1]) !== -1) {
             neighbors.S = {x, y:y+1};
         }
 
-        if(x > 0 && _.findIndex(maze, grid[x-1][y]) !== -1) {
+        if(x > 0 && _.findIndex(this.inMaze, this.maze[x-1][y]) !== -1) {
             neighbors.W = {x:x-1, y};
         }
 
         return neighbors;
     }
 
-    function setStart() {
-        let corners = [{x:0, y:0},{x:grid.length-1, y:0},{x:grid.length-1, y:grid.length-1},{x:0, y:grid.length-1}];
+    setStartEnd() {
+        let cornerStart = [{x:0, y:0},{x:this.maze.length-1, y:0},{x:this.maze.length-1, y:this.maze.length-1},{x:0, y:this.maze.length-1}];
+        let cornerEnd = [{x:this.maze.length-1, y:this.maze.length-1},{x:0, y:this.maze.length-1},{x:0, y:0},{x:this.maze.length-1, y:0}];
         let index = Math.floor(Math.random() * 4);
-        let corner = corners[index];
-        grid[corner.x][corner.y].isStart = true;
-        grid[corner.x][corner.y].isCurrent = true;
+
+        let start = cornerStart[index];
+        let end = cornerEnd[index];
+
+        this.maze[start.x][start.y].isStart = true;
+        this.maze[start.x][start.y].isCurrent = true;
+        this.startCell = this.maze[start.x][start.y];
+        this.currCell = this.maze[start.x][start.y];
+
+        this.maze[end.x][end.y].isFinish = true;
+        this.endCell = this.maze[end.x][end.y];
     }
 
-    function moveNorth() {
+    moveNorth() {
         console.log('moving north');
     }
 
-    function moveEast() {
+    moveEast() {
         console.log('moving east');
     }
 
-    function moveSouth() {
+    moveSouth() {
         console.log('moving south');
     }
 
-    function moveWest() {
+    moveWest() {
         console.log('moving west');
     }
-// ****** maze functions end ******
 
+    shortestPath() {
+        let shortestPath = this.shortestPathWrapper();
+        let curr = shortestPath.current;
+        let maze = shortestPath.maze;
+
+        while(curr.parent) {
+
+            maze[curr.location.x][curr.location.y].isShortestPath = true;
+            curr = maze[curr.parent.x][curr.parent.y];
+
+            this.draw();
+            this.maze = maze;
+        }
+    }
+
+    shortestPathWrapper() {
+        let maze = this.maze;
+        let start = this.currCell;
+        let end = this.endCell;
+
+        let S = [];
+        let Q = [];
+
+        maze[start.location.x][start.location.y].parent = null;
+        Q.push(this.startCell);
+
+        while(Q.length > 0) {
+            var current = Q.pop();
+
+            if(current.location === end.location) {
+                return {current, maze};
+            }
+
+            _.each(current.directions, (val, key)=>{
+                if(val) {
+                    if(_.indexOf(S, val) === -1) {
+                        S.push(val);
+                        maze[val.x][val.y].parent = current.location;
+                        Q.push(maze[val.x][val.y]);
+                    }
+                }
+            });
+        }
+    }
+// ****** maze functions end ******
 // ****** create functions ******
-    function createCell(specs) {
+    createCell(specs) {
         let that = {};
 
         that.location = (specs.location) ? specs.location : console.log("missing location");
-        that.directions = {N, E, S, W};
+        that.directions = {N: false, E: false, S: false, W: false};
         that.isStart = false;
         that.isFinish = false;
         that.isCurrent = false;
         that.isVisited = false;
         that.isShortestPath = false;
+        that.parent = null;
 
         return that;
     }
 
-    function CreateMaze(size = 5) {
-        init(size);
-        while(frontiers.length > 0) {
-            let nextCell = frontiers.splice(Math.floor(Math.random() * frontiers.length), 1)[0]; // find next sell from frontier cells
-            nextCell = createCell({location:nextCell});
-            mark(nextCell); // add cell to maze, move to cell
+    createMaze() {
+        while(this.frontiers.length > 0) {
+            let nextCell = this.frontiers.splice(Math.floor(Math.random() * this.frontiers.length), 1)[0]; // find next sell from frontier cells
+            nextCell = this.createCell({location:nextCell});
+            this.mark(nextCell); // add cell to maze, move to cell
 
-            let neighbor = randomProperty(findNeighbors(nextCell));
+            let neighbor = this.randomProperty(this.findNeighbors(nextCell));
 
             let dir = neighbor.dir;
-            let dirOpp = OPPOSITE[dir];
+            let dirOpp = this.OPPOSITE[dir];
 
             nextCell.directions[dir] = neighbor.cell;
-            grid[nextCell.location.x][nextCell.location.y] = nextCell;
-            grid[neighbor.cell.x][neighbor.cell.y].directions[dirOpp] = nextCell.location;
+            this.maze[nextCell.location.x][nextCell.location.y] = nextCell;
+            this.maze[neighbor.cell.x][neighbor.cell.y].directions[dirOpp] = nextCell.location;
 
-            currCell = nextCell;
+            this.currCell = nextCell;
         }
-        let center = Math.floor(grid.length / 2);
-        grid[center][center].isFinish = true;
-        setStart();
+
+        this.setStartEnd();
     }
 
-    function mark(cell) {
+    mark(cell) {
         let x = cell.location.x;
         let y = cell.location.y;
 
-        grid[x][y] = cell;
-        maze.push(cell);
+        this.maze[x][y] = cell;
+        this.inMaze.push(cell);
 
-        addFrontier(x-1, y);
-        addFrontier(x+1, y);
-        addFrontier(x, y-1);
-        addFrontier(x, y+1);
+        this.addFrontier(x-1, y);
+        this.addFrontier(x+1, y);
+        this.addFrontier(x, y-1);
+        this.addFrontier(x, y+1);
     }
 // ****** create functions end ******
 
 // ****** render functions ******
-    function renderCell(cell) {
+    renderCell(cell) {
         let fillColor;
-        let w = canvas.width / grid.length; // 100 = 500 / 5
-        let h = canvas.height / grid.length; // 100 = 500 / 5
+        let w = this.canvas.width / this.maze.length; // 100 = 500 / 5
+        let h = this.canvas.height / this.maze.length; // 100 = 500 / 5
 
         if(cell.location) {
             let x = cell.location.x;
@@ -186,38 +240,46 @@ var MazeGame = (()=>{
                 fillColor = 'rgba(0, 0, 255, 0.5)';
             }
 
-            context.fillStyle = fillColor;
-            context.fillRect(x*w, y*h, w, h);
+            if(cell.isgScoreIsBest) {
+                fillColor = 'rgba(255, 165, 0, 0.5)';
+            }
+
+            if(cell.isShortestPath) {
+                fillColor = 'rgba(0, 255, 0, 0.5)';
+            }
+
+            this.context.fillStyle = fillColor;
+            this.context.fillRect(x*w, y*h, w, h);
 
             _.each(cell.directions, (dir, index)=>{
                 switch(index) {
                     case 'N':
-                        context.beginPath();
-                        context.moveTo(x*w, y*h);
-                        context.lineTo((x+1)*w, y*h);
-                        context.strokeStyle = (dir != 'N') ? '#FFF' : '#000';
-                        context.stroke();
+                        this.context.beginPath();
+                        this.context.moveTo(x*w, y*h);
+                        this.context.lineTo((x+1)*w, y*h);
+                        this.context.strokeStyle = (dir) ? '#FFF' : '#000';
+                        this.context.stroke();
                         break;
                     case 'E':
-                        context.beginPath();
-                        context.moveTo((x+1)*w, y*h);
-                        context.lineTo((x+1)*w, (y+1)*h);
-                        context.strokeStyle = (dir != 'E') ? '#FFF' : '#000';
-                        context.stroke();
+                        this.context.beginPath();
+                        this.context.moveTo((x+1)*w, y*h);
+                        this.context.lineTo((x+1)*w, (y+1)*h);
+                        this.context.strokeStyle = (dir) ? '#FFF' : '#000';
+                        this.context.stroke();
                         break;
                     case 'S':
-                        context.beginPath();
-                        context.moveTo((x+1)*w, (y+1)*h);
-                        context.lineTo(x*w, (y+1)*h);
-                        context.strokeStyle = (dir != 'S') ? '#FFF' : '#000';
-                        context.stroke();
+                        this.context.beginPath();
+                        this.context.moveTo((x+1)*w, (y+1)*h);
+                        this.context.lineTo(x*w, (y+1)*h);
+                        this.context.strokeStyle = (dir) ? '#FFF' : '#000';
+                        this.context.stroke();
                         break;
                     case 'W':
-                        context.beginPath();
-                        context.moveTo(x*w, (y+1)*h);
-                        context.lineTo(x*w, y*h);
-                        context.strokeStyle = (dir != 'W') ? '#FFF' : '#000';
-                        context.stroke();
+                        this.context.beginPath();
+                        this.context.moveTo(x*w, (y+1)*h);
+                        this.context.lineTo(x*w, y*h);
+                        this.context.strokeStyle = (dir) ? '#FFF' : '#000';
+                        this.context.stroke();
                         break;
                     default:
                 }
@@ -225,26 +287,17 @@ var MazeGame = (()=>{
         }
     }
 
-    function draw() {
-        context.save();
+    draw() {
+        this.context.save();
 
-        for(let x = 0; x < grid.length; x++) {
-            for(let y = 0; y < grid.length; y++) {
-                let cell = grid[x][y];
-                renderCell(cell);
+        for(let x in this.maze) {
+            for(let y in this.maze[x]) {
+                let cell = this.maze[x][y];
+                this.renderCell(cell);
             }
         }
 
-        context.restore();
+        this.context.restore();
     }
 // ****** render functions end ******
-
-    return {
-        CreateMaze,
-        draw,
-        moveNorth,
-        moveEast,
-        moveSouth,
-        moveWest
-    };
-})();
+}
