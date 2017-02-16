@@ -3,20 +3,12 @@
 class MazeGame {
     constructor(size) {
         this.OPPOSITE = {N:'S', S:'N', E:'W', W:'E'};
-        this.canvas = document.getElementById('canvas');
-        this.context = this.canvas.getContext('2d');
         this.startCell = null;
         this.endCell = null;
         this.inMaze = [];
         this.frontiers = [];
         this.size = size;
-
-        CanvasRenderingContext2D.prototype.clear=()=>{
-            this.save();
-            this.setTransform(1, 0, 0, 1, 0, 0);
-            this.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            this.restore();
-        };
+        this.playerMoves = [];
 
         this.maze = this.initMaze(size);
 
@@ -27,6 +19,31 @@ class MazeGame {
         this.mark(this.currCell);
 
         this.createMaze();
+
+        Graphics.initialize(size);
+        this.myTexture = Graphics.Texture({});
+
+        this.inputDispatch = {
+            // [38]: toggleHint, // H
+            // [39]: toggleBreadcrumbs, // B
+            // [40]: togglePath, // P
+            // [37]: toggleScore, // Y
+
+            [87]: {N: 'N', move: this.myTexture.moveNorth}, // w
+            [68]: {E: 'E', move: this.myTexture.moveEast}, // d
+            [83]: {S: 'S', move: this.myTexture.moveSouth}, // s
+            [65]: {W: 'W', move: this.myTexture.moveWest}, // a
+
+            [73]: {N: 'N', move: this.myTexture.moveNorth}, // i
+            [76]: {E: 'E', move: this.myTexture.moveEast}, // l
+            [75]: {S: 'S', move: this.myTexture.moveSouth}, // k
+            [74]: {W: 'W', move: this.myTexture.moveWest}, // j
+
+            [38]: {N: 'N', move: this.myTexture.moveNorth}, // ^
+            [39]: {E: 'E', move: this.myTexture.moveEast}, // >
+            [40]: {S: 'S', move: this.myTexture.moveSouth}, // <
+            [37]: {W: 'W', move: this.myTexture.moveWest}, // V
+        };
     }
 
     initMaze(size) {
@@ -49,12 +66,14 @@ class MazeGame {
         return {dir, cell};
     }
 
-    heuristic(pos0, pos1) {
-		// This is the Manhattan distance
-		let d1 = Math.abs(pos1.x - pos0.x);
-		let d2 = Math.abs(pos1.y - pos0.y);
-		return d1 + d2;
-	}
+    keyDown(e, elapsedTime) {
+        // console.log(e.key , e.keyCode);
+        if (this.inputDispatch.hasOwnProperty(e.keyCode)) {
+            let input = this.inputDispatch[e.keyCode].move(elapsedTime, this.maze, this.currCell);
+            this.maze = input.maze;
+            this.currCell = (input.currCell) ? input.currCell : this.currCell;
+        }
+    }
 // ****** helper functions end ******
 
 // ****** maze functions ******
@@ -106,24 +125,8 @@ class MazeGame {
         this.endCell = this.maze[end.x][end.y];
     }
 
-    moveNorth() {
-        console.log('moving north');
-    }
-
-    moveEast() {
-        console.log('moving east');
-    }
-
-    moveSouth() {
-        console.log('moving south');
-    }
-
-    moveWest() {
-        console.log('moving west');
-    }
-
-    shortestPath() {
-        let shortestPath = this.shortestPathWrapper();
+    shortestPathWrapper() {
+        let shortestPath = this.shortestPath();
         let curr = shortestPath.current;
         let maze = shortestPath.maze;
 
@@ -137,10 +140,12 @@ class MazeGame {
         }
     }
 
-    shortestPathWrapper() {
+    shortestPath() {
+        // find this once.  Then during the moving process you push and pop off the stack,  if you move along the shortest path then you pop off the stack,  If you move away from the shortest path you push on top of the stack.
         let maze = this.maze;
         let start = this.currCell;
         let end = this.endCell;
+        let current;
 
         let S = [];
         let Q = [];
@@ -149,10 +154,11 @@ class MazeGame {
         Q.push(this.startCell);
 
         while(Q.length > 0) {
-            var current = Q.pop();
+            current = Q.pop();
 
             if(current.location === end.location) {
-                return {current, maze};
+                break;
+                // return {current, maze};
             }
 
             _.each(current.directions, (val, key)=>{
@@ -165,6 +171,22 @@ class MazeGame {
                 }
             });
         }
+
+        let x = maze.length;
+        let y = maze.length;
+        let path = [];
+
+        let curr = current;
+
+        while(!curr.isStart) {
+            let parent = maze[x][y].parent;
+
+            curr = maze[parent.x][parent.y];
+
+            path.push(curr);
+        }
+
+        return path;
     }
 // ****** maze functions end ******
 // ****** create functions ******
@@ -184,6 +206,7 @@ class MazeGame {
     }
 
     createMaze() {
+        // this using the Prim's Algo to create the maze
         while(this.frontiers.length > 0) {
             let nextCell = this.frontiers.splice(Math.floor(Math.random() * this.frontiers.length), 1)[0]; // find next sell from frontier cells
             nextCell = this.createCell({location:nextCell});
@@ -219,85 +242,14 @@ class MazeGame {
 // ****** create functions end ******
 
 // ****** render functions ******
-    renderCell(cell) {
-        let fillColor;
-        let w = this.canvas.width / this.maze.length; // 100 = 500 / 5
-        let h = this.canvas.height / this.maze.length; // 100 = 500 / 5
-
-        if(cell.location) {
-            let x = cell.location.x;
-            let y = cell.location.y;
-
-            if(cell.isFinish) {
-                fillColor = 'rgba(255, 0, 0, 0.5)';
-            } else if (cell.isStart) {
-                fillColor = 'rgba(0, 255, 0, 0.5)';
-            } else {
-                fillColor = '#FFF';
-            }
-
-            if (cell.isStart) {
-                fillColor = 'rgba(0, 0, 255, 0.5)';
-            }
-
-            if(cell.isgScoreIsBest) {
-                fillColor = 'rgba(255, 165, 0, 0.5)';
-            }
-
-            if(cell.isShortestPath) {
-                fillColor = 'rgba(0, 255, 0, 0.5)';
-            }
-
-            this.context.fillStyle = fillColor;
-            this.context.fillRect(x*w, y*h, w, h);
-
-            _.each(cell.directions, (dir, index)=>{
-                switch(index) {
-                    case 'N':
-                        this.context.beginPath();
-                        this.context.moveTo(x*w, y*h);
-                        this.context.lineTo((x+1)*w, y*h);
-                        this.context.strokeStyle = (dir) ? '#FFF' : '#000';
-                        this.context.stroke();
-                        break;
-                    case 'E':
-                        this.context.beginPath();
-                        this.context.moveTo((x+1)*w, y*h);
-                        this.context.lineTo((x+1)*w, (y+1)*h);
-                        this.context.strokeStyle = (dir) ? '#FFF' : '#000';
-                        this.context.stroke();
-                        break;
-                    case 'S':
-                        this.context.beginPath();
-                        this.context.moveTo((x+1)*w, (y+1)*h);
-                        this.context.lineTo(x*w, (y+1)*h);
-                        this.context.strokeStyle = (dir) ? '#FFF' : '#000';
-                        this.context.stroke();
-                        break;
-                    case 'W':
-                        this.context.beginPath();
-                        this.context.moveTo(x*w, (y+1)*h);
-                        this.context.lineTo(x*w, y*h);
-                        this.context.strokeStyle = (dir) ? '#FFF' : '#000';
-                        this.context.stroke();
-                        break;
-                    default:
-                }
-            });
-        }
-    }
-
-    draw() {
-        this.context.save();
+    drawMaze() {
 
         for(let x in this.maze) {
             for(let y in this.maze[x]) {
-                let cell = this.maze[x][y];
-                this.renderCell(cell);
+                let cell = Graphics.Cell(this.maze[x][y]);
+                cell.draw();
             }
         }
-
-        this.context.restore();
     }
 // ****** render functions end ******
 }
