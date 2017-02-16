@@ -25,8 +25,8 @@ class MazeGame {
         this.myTexture = Graphics.Texture({});
 
         this.inputDispatch = {
-            // [38]: toggleHint, // H
-            // [39]: toggleBreadcrumbs, // B
+            [72]: Graphics.toggleHint, // H
+            [66]: Graphics.toggleBreadcrumbs, // B
             [80]: Graphics.togglePath, // P
             // [37]: toggleScore, // Y
 
@@ -70,6 +70,7 @@ class MazeGame {
     }
 
     keyDown(e, elapsedTime) {
+        // console.log(e.key, e.keyCode);
         if (this.inputDispatch.hasOwnProperty(e.keyCode)) {
             let input = this.inputDispatch[e.keyCode](elapsedTime, this.maze, this.currCell, this.path);
             if(input) {

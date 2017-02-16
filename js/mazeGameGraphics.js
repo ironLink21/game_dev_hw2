@@ -5,6 +5,9 @@ let Graphics = (()=>{
     let context = null;
     let mySize = null;
     let isShortVisible = false;
+    let isHintVisible = false;
+    let isBreadVisible = false;
+    let hint = {};
 
     function initialize(size) {
         canvas = document.getElementById('canvas');
@@ -40,6 +43,10 @@ let Graphics = (()=>{
             } else {
                 if(isShortVisible && spec.isShortestPath) {
                     fillColor = 'rgba(0, 0, 255, 0.5)';
+                } else if (isHintVisible && _.isEqual(hint, spec.location)) {
+                    fillColor = 'rgba(238, 36, 188, 0.5)';
+                } else if (isBreadVisible && spec.isVisited) {
+                    fillColor = 'rgba(230, 247, 48, 0.5)';
                 } else {
                     fillColor = '#FFF';
                 }
@@ -113,6 +120,7 @@ let Graphics = (()=>{
                 let location = cell.location;
                 maze[location.x][location.y].isCurrent = false;
                 maze[cell.directions.N.x][cell.directions.N.y].isCurrent = true;
+                maze[cell.directions.N.x][cell.directions.N.y].isVisited = true;
                 currCell = maze[cell.directions.N.x][cell.directions.N.y];
 
                 if(_.isEqual(cell.directions.N, _.last(path))) {
@@ -134,6 +142,7 @@ let Graphics = (()=>{
                 let location = cell.location;
                 maze[location.x][location.y].isCurrent = false;
                 maze[cell.directions.E.x][cell.directions.E.y].isCurrent = true;
+                maze[cell.directions.E.x][cell.directions.E.y].isVisited = true;
                 currCell = maze[cell.directions.E.x][cell.directions.E.y];
                 if(_.isEqual(cell.directions.E, _.last(path))) {
                     path.pop();
@@ -154,6 +163,7 @@ let Graphics = (()=>{
                 let location = cell.location;
                 maze[location.x][location.y].isCurrent = false;
                 maze[cell.directions.S.x][cell.directions.S.y].isCurrent = true;
+                maze[cell.directions.S.x][cell.directions.S.y].isVisited = true;
                 currCell = maze[cell.directions.S.x][cell.directions.S.y];
                 if(_.isEqual(cell.directions.S, _.last(path))) {
                     path.pop();
@@ -174,6 +184,7 @@ let Graphics = (()=>{
                 let location = cell.location;
                 maze[location.x][location.y].isCurrent = false;
                 maze[cell.directions.W.x][cell.directions.W.y].isCurrent = true;
+                maze[cell.directions.W.x][cell.directions.W.y].isVisited = true;
                 currCell = maze[cell.directions.W.x][cell.directions.W.y];
                 if(_.isEqual(cell.directions.W, _.last(path))) {
                     path.pop();
@@ -198,11 +209,22 @@ let Graphics = (()=>{
         isShortVisible = (isShortVisible) ? false : true;
     }
 
+    function toggleHint(elapsedTime, maze = null, currCell = null, path) {
+        isHintVisible = (isHintVisible) ? false : true;
+        hint = _.last(path);
+    }
+
+    function toggleBreadcrumbs(elapsedTime) {
+        isBreadVisible = (isBreadVisible) ? false : true;
+    }
+
     return {
         initialize,
         Cell,
         Texture,
         beginRender,
-        togglePath
+        togglePath,
+        toggleHint,
+        toggleBreadcrumbs
     };
 })();
