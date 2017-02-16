@@ -70,12 +70,12 @@ class MazeGame {
     }
 
     keyDown(e, elapsedTime) {
-        console.log(e.key , e.keyCode);
         if (this.inputDispatch.hasOwnProperty(e.keyCode)) {
-            let input = this.inputDispatch[e.keyCode](elapsedTime, this.maze, this.currCell);
+            let input = this.inputDispatch[e.keyCode](elapsedTime, this.maze, this.currCell, this.path);
             if(input) {
                 this.maze = input.maze;
                 this.currCell = (input.currCell) ? input.currCell : this.currCell;
+                this.path = input.path;
             }
         }
     }

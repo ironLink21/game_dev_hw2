@@ -106,75 +106,85 @@ let Graphics = (()=>{
             //spec.rotation += 0.01;
         };
 
-        that.moveNorth=(elapsedTime, maze, cell)=>{
-            console.log('moving north');
+        that.moveNorth=(elapsedTime, maze, cell, path)=>{
             let currCell = null;
 
             if(cell.directions.N){
-                maze[cell.location.x][cell.location.y].isCurrent = false;
+                let location = cell.location;
+                maze[location.x][location.y].isCurrent = false;
                 maze[cell.directions.N.x][cell.directions.N.y].isCurrent = true;
                 currCell = maze[cell.directions.N.x][cell.directions.N.y];
+
+                if(_.isEqual(cell.directions.N, _.last(path))) {
+                    path.pop();
+                    maze[location.x][location.y].isShortestPath = false;
+                } else {
+                    path.push(location);
+                    maze[location.x][location.y].isShortestPath = true;
+                }
             }
             // spec.center.x -= (spec.speed * (elapsedTime / 1000));
-            return {maze, currCell};
+            return {maze, currCell, path};
         };
 
-        that.moveEast=(elapsedTime, maze, cell)=>{
-            console.log('moving east');
+        that.moveEast=(elapsedTime, maze, cell, path)=>{
             let currCell = null;
 
             if(cell.directions.E){
-                maze[cell.location.x][cell.location.y].isCurrent = false;
+                let location = cell.location;
+                maze[location.x][location.y].isCurrent = false;
                 maze[cell.directions.E.x][cell.directions.E.y].isCurrent = true;
                 currCell = maze[cell.directions.E.x][cell.directions.E.y];
+                if(_.isEqual(cell.directions.E, _.last(path))) {
+                    path.pop();
+                    maze[location.x][location.y].isShortestPath = false;
+                } else {
+                    path.push(location);
+                    maze[location.x][location.y].isShortestPath = true;
+                }
             }
             // spec.center.x -= (spec.speed * (elapsedTime / 1000));
-            return {maze, currCell};
+            return {maze, currCell, path};
         };
 
-        that.moveSouth=(elapsedTime, maze, cell)=>{
-            console.log('moving south');
+        that.moveSouth=(elapsedTime, maze, cell, path)=>{
             let currCell = null;
 
             if(cell.directions.S){
-                maze[cell.location.x][cell.location.y].isCurrent = false;
+                let location = cell.location;
+                maze[location.x][location.y].isCurrent = false;
                 maze[cell.directions.S.x][cell.directions.S.y].isCurrent = true;
                 currCell = maze[cell.directions.S.x][cell.directions.S.y];
+                if(_.isEqual(cell.directions.S, _.last(path))) {
+                    path.pop();
+                    maze[location.x][location.y].isShortestPath = false;
+                } else {
+                    path.push(location);
+                    maze[location.x][location.y].isShortestPath = true;
+                }
             }
             // spec.rotation -= (spec.rotateRate * (elapsedTime / 1000));
-            return {maze, currCell};
+            return {maze, currCell, path};
         };
 
-        that.moveWest=(elapsedTime, maze, cell)=>{
-            console.log('moving west');
+        that.moveWest=(elapsedTime, maze, cell, path)=>{
             let currCell = null;
 
             if(cell.directions.W){
-                maze[cell.location.x][cell.location.y].isCurrent = false;
+                let location = cell.location;
+                maze[location.x][location.y].isCurrent = false;
                 maze[cell.directions.W.x][cell.directions.W.y].isCurrent = true;
                 currCell = maze[cell.directions.W.x][cell.directions.W.y];
+                if(_.isEqual(cell.directions.W, _.last(path))) {
+                    path.pop();
+                    maze[location.x][location.y].isShortestPath = false;
+                } else {
+                    path.push(location);
+                    maze[location.x][location.y].isShortestPath = true;
+                }
             }
             // spec.rotation -= (spec.rotateRate * (elapsedTime / 1000));
-            return {maze, currCell};
-        };
-
-        that.draw=()=>{
-            console.log('draw Texture');
-            // if (ready) {
-            //     context.save();
-
-            //     context.translate(spec.center.x, spec.center.y);
-            //     context.rotate(spec.rotation);
-            //     context.translate(-spec.center.x, -spec.center.y);
-
-            //     context.drawImage(
-            //         image,
-            //         spec.center.x - spec.width / 2,
-            //         spec.center.y - spec.height / 2,
-            //         spec.width, spec.height);
-
-            //     context.restore();
-            // }
+            return {maze, currCell, path};
         };
 
         return that;
@@ -185,7 +195,6 @@ let Graphics = (()=>{
     }
 
     function togglePath(elapsedTime) {
-        console.log('toggle path');
         isShortVisible = (isShortVisible) ? false : true;
     }
 

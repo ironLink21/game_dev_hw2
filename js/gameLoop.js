@@ -26,7 +26,7 @@ let GameLoop = (()=>{
     }
 
     window.onload=()=>{
-        game = new MazeGame(5);
+        game = new MazeGame(20);
 
         window.requestAnimationFrame(gameLoop);
 
