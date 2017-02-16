@@ -27,23 +27,23 @@ class MazeGame {
         this.inputDispatch = {
             // [38]: toggleHint, // H
             // [39]: toggleBreadcrumbs, // B
-            // [40]: togglePath, // P
+            [80]: Graphics.togglePath, // P
             // [37]: toggleScore, // Y
 
-            [87]: {N: 'N', move: this.myTexture.moveNorth}, // w
-            [68]: {E: 'E', move: this.myTexture.moveEast}, // d
-            [83]: {S: 'S', move: this.myTexture.moveSouth}, // s
-            [65]: {W: 'W', move: this.myTexture.moveWest}, // a
+            [87]: this.myTexture.moveNorth, // w
+            [68]: this.myTexture.moveEast, // d
+            [83]: this.myTexture.moveSouth, // s
+            [65]: this.myTexture.moveWest, // a
 
-            [73]: {N: 'N', move: this.myTexture.moveNorth}, // i
-            [76]: {E: 'E', move: this.myTexture.moveEast}, // l
-            [75]: {S: 'S', move: this.myTexture.moveSouth}, // k
-            [74]: {W: 'W', move: this.myTexture.moveWest}, // j
+            [73]: this.myTexture.moveNorth, // i
+            [76]: this.myTexture.moveEast, // l
+            [75]: this.myTexture.moveSouth, // k
+            [74]: this.myTexture.moveWest, // j
 
-            [38]: {N: 'N', move: this.myTexture.moveNorth}, // ^
-            [39]: {E: 'E', move: this.myTexture.moveEast}, // >
-            [40]: {S: 'S', move: this.myTexture.moveSouth}, // <
-            [37]: {W: 'W', move: this.myTexture.moveWest}, // V
+            [38]: this.myTexture.moveNorth, // ^
+            [39]: this.myTexture.moveEast, // >
+            [40]: this.myTexture.moveSouth, // <
+            [37]: this.myTexture.moveWest, // V
         };
 
         this.shortestPath();
@@ -70,11 +70,13 @@ class MazeGame {
     }
 
     keyDown(e, elapsedTime) {
-        // console.log(e.key , e.keyCode);
+        console.log(e.key , e.keyCode);
         if (this.inputDispatch.hasOwnProperty(e.keyCode)) {
-            let input = this.inputDispatch[e.keyCode].move(elapsedTime, this.maze, this.currCell);
-            this.maze = input.maze;
-            this.currCell = (input.currCell) ? input.currCell : this.currCell;
+            let input = this.inputDispatch[e.keyCode](elapsedTime, this.maze, this.currCell);
+            if(input) {
+                this.maze = input.maze;
+                this.currCell = (input.currCell) ? input.currCell : this.currCell;
+            }
         }
     }
 // ****** helper functions end ******
@@ -227,13 +229,16 @@ class MazeGame {
 
 // ****** render functions ******
     drawMaze() {
-
         for(let x in this.maze) {
             for(let y in this.maze[x]) {
                 let cell = Graphics.Cell(this.maze[x][y]);
                 cell.draw();
             }
         }
+    }
+
+    togglePath() {
+        this.isShortVisible = (this.isShortVisible) ? false : true;
     }
 // ****** render functions end ******
 }

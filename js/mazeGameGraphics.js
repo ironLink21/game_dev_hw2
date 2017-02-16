@@ -4,6 +4,7 @@ let Graphics = (()=>{
     let canvas = null;
     let context = null;
     let mySize = null;
+    let isShortVisible = false;
 
     function initialize(size) {
         canvas = document.getElementById('canvas');
@@ -37,15 +38,15 @@ let Graphics = (()=>{
                 fillColor = 'rgba(0, 255, 0, 0.5)';
 
             } else {
-                fillColor = '#FFF';
-            }
-
-            if(spec.isShortestPath) {
-                fillColor = 'rgba(0, 0, 255, 0.5)';
+                if(isShortVisible && spec.isShortestPath) {
+                    fillColor = 'rgba(0, 0, 255, 0.5)';
+                } else {
+                    fillColor = '#FFF';
+                }
             }
 
             if(spec.isCurrent) {
-                fillColor = 'RGBA(255, 165, 0, 0.5)';
+                fillColor = 'rgba(255, 165, 0, 0.5)';
             }
 
             context.fillStyle = fillColor;
@@ -183,10 +184,16 @@ let Graphics = (()=>{
         context.clear();
     }
 
+    function togglePath(elapsedTime) {
+        console.log('toggle path');
+        isShortVisible = (isShortVisible) ? false : true;
+    }
+
     return {
         initialize,
         Cell,
         Texture,
-        beginRender
+        beginRender,
+        togglePath
     };
 })();
