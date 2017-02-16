@@ -27,7 +27,6 @@ let GameLoop = (()=>{
 
     window.onload=()=>{
         game = new MazeGame(5);
-        // game.shortestPathWrapper();
 
         window.requestAnimationFrame(gameLoop);
 

@@ -7,8 +7,9 @@ class MazeGame {
         this.endCell = null;
         this.inMaze = [];
         this.frontiers = [];
-        this.size = size;
+        this.path = [];
         this.playerMoves = [];
+        this.size = size;
 
         this.maze = this.initMaze(size);
 
@@ -44,6 +45,8 @@ class MazeGame {
             [40]: {S: 'S', move: this.myTexture.moveSouth}, // <
             [37]: {W: 'W', move: this.myTexture.moveWest}, // V
         };
+
+        this.shortestPath();
     }
 
     initMaze(size) {
@@ -125,21 +128,6 @@ class MazeGame {
         this.endCell = this.maze[end.x][end.y];
     }
 
-    shortestPathWrapper() {
-        let shortestPath = this.shortestPath();
-        let curr = shortestPath.current;
-        let maze = shortestPath.maze;
-
-        while(curr.parent) {
-
-            maze[curr.location.x][curr.location.y].isShortestPath = true;
-            curr = maze[curr.parent.x][curr.parent.y];
-
-            this.draw();
-            this.maze = maze;
-        }
-    }
-
     shortestPath() {
         // find this once.  Then during the moving process you push and pop off the stack,  if you move along the shortest path then you pop off the stack,  If you move away from the shortest path you push on top of the stack.
         let maze = this.maze;
@@ -158,12 +146,11 @@ class MazeGame {
 
             if(current.location === end.location) {
                 break;
-                // return {current, maze};
             }
 
-            _.each(current.directions, (val, key)=>{
+            _.each(current.directions, (val)=>{
                 if(val) {
-                    if(_.indexOf(S, val) === -1) {
+                    if(_.indexOf(S, val) === -1 && !_.isEqual(val, current.parent)) {
                         S.push(val);
                         maze[val.x][val.y].parent = current.location;
                         Q.push(maze[val.x][val.y]);
@@ -172,21 +159,18 @@ class MazeGame {
             });
         }
 
-        let x = maze.length;
-        let y = maze.length;
-        let path = [];
+        current = maze[current.location.x][current.location.y];
 
-        let curr = current;
+        while(!current.isStart) {
+            let parent = maze[current.location.x][current.location.y].parent;
+            maze[current.location.x][current.location.y].isShortestPath = true;
 
-        while(!curr.isStart) {
-            let parent = maze[x][y].parent;
+            this.path.push(current.location);
 
-            curr = maze[parent.x][parent.y];
-
-            path.push(curr);
+            current = maze[parent.x][parent.y];
         }
 
-        return path;
+        this.maze = maze;
     }
 // ****** maze functions end ******
 // ****** create functions ******
