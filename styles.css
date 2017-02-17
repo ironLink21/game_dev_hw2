@@ -1,9 +1,11 @@
 #main-window {
     max-width: 800px;
     margin: auto;
+    display: inline-flex;
 }
 
 h1, h4 {
+    width: 800px;
     text-align: center;
     color: #FFD700;
     background-color: #008000;
@@ -11,4 +13,31 @@ h1, h4 {
 
 #canvas {
     border: 5px solid #4169E1;
+}
+
+#input-section {
+    margin: 0 10px;
+}
+
+/*Accordion section*/
+button.accordion {
+    background-color: #eee;
+    color: #444;
+    cursor: pointer;
+    padding: 18px;
+    width: 230px;
+    text-align: left;
+    border: none;
+    outline: none;
+    transition: 0.4s;
+}
+
+button.accordion.active, button.accordion:hover {
+    background-color: #ddd;
+}
+
+div.panel {
+    padding: 0 18px;
+    background-color: white;
+    display: none;
 }

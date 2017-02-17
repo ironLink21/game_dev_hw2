@@ -81,7 +81,6 @@ class MazeGame {
                 if(this.currCell.count <= 1) {
                     this.score += input.score;
                 }
-                console.log(this.score);
             }
         }
     }
@@ -181,6 +180,7 @@ class MazeGame {
         this.maze = maze;
     }
 // ****** maze functions end ******
+
 // ****** create functions ******
     createCell(specs) {
         let that = {};
@@ -247,5 +247,19 @@ class MazeGame {
     togglePath() {
         this.isShortVisible = (this.isShortVisible) ? false : true;
     }
+
+    getScore() {
+        return this.score;
+    }
 // ****** render functions end ******
+
+// ****** interface functions ******
+    toggleAccordion() {
+
+    }
+
+    toggleMazeSize(size) {
+
+    }
+// ****** interface functions end ******
 }
