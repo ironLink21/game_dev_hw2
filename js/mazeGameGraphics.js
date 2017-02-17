@@ -8,6 +8,11 @@ let Graphics = (()=>{
     let isHintVisible = false;
     let isBreadVisible = false;
     let hint = {};
+    let colors = {
+        wall: 'rgba(0, 128, 0, 1)',
+        floor: 'rgba(44, 176, 55, 1)',
+        path: '#4169E1'
+    };
 
     function initialize(size) {
         canvas = document.getElementById('canvas');
@@ -42,13 +47,16 @@ let Graphics = (()=>{
 
             } else {
                 if(isShortVisible && spec.isShortestPath) {
-                    fillColor = 'rgba(0, 0, 255, 0.5)';
+                    fillColor = colors.path;
+
                 } else if (isHintVisible && _.isEqual(hint, spec.location)) {
                     fillColor = 'rgba(238, 36, 188, 0.5)';
+
                 } else if (isBreadVisible && spec.isVisited) {
                     fillColor = 'rgba(230, 247, 48, 0.5)';
+
                 } else {
-                    fillColor = '#FFF';
+                    fillColor = colors.floor;
                 }
             }
 
@@ -66,29 +74,30 @@ let Graphics = (()=>{
                     case 'N':
                         context.moveTo(x*w, y*h);
                         context.lineTo((x+1)*w, y*h);
-                        context.strokeStyle = (dir) ? '#FFF' : '#000';
+                        context.strokeStyle = (dir) ? colors.floor : colors.wall;
                         break;
 
                     case 'E':
                         context.moveTo((x+1)*w, y*h);
                         context.lineTo((x+1)*w, (y+1)*h);
-                        context.strokeStyle = (dir) ? '#FFF' : '#000';
+                        context.strokeStyle = (dir) ? colors.floor : colors.wall;
                         break;
 
                     case 'S':
                         context.moveTo((x+1)*w, (y+1)*h);
                         context.lineTo(x*w, (y+1)*h);
-                        context.strokeStyle = (dir) ? '#FFF' : '#000';
+                        context.strokeStyle = (dir) ? colors.floor : colors.wall;
                         break;
 
                     case 'W':
                         context.moveTo(x*w, (y+1)*h);
                         context.lineTo(x*w, y*h);
-                        context.strokeStyle = (dir) ? '#FFF' : '#000';
+                        context.strokeStyle = (dir) ? colors.floor : colors.wall;
                         break;
                     default:
                 }
 
+                context.lineWidth = 3;
                 context.stroke();
             });
 
@@ -96,6 +105,41 @@ let Graphics = (()=>{
 		};
 
         return that;
+    }
+
+    function directionAction(type, elapsedTime, maze, cell, path) {
+        let currCell = null;
+        let score = null;
+
+        let pathDir = _.map(path ,(i)=>{
+            return i.location;
+        });
+
+        let points = _.map(path ,(i)=>{
+            return i.point;
+        });
+
+        if(cell.directions[type]){
+            let location = cell.location;
+            maze[location.x][location.y].isCurrent = false;
+            maze[cell.directions[type].x][cell.directions[type].y].isCurrent = true;
+            maze[cell.directions[type].x][cell.directions[type].y].isVisited = true;
+            maze[cell.directions[type].x][cell.directions[type].y].count++;
+            currCell = maze[cell.directions[type].x][cell.directions[type].y];
+
+            if(_.isEqual(cell.directions[type], _.last(pathDir))) {
+                let element = path.pop();
+                maze[location.x][location.y].isShortestPath = false;
+                score = element.point;
+            } else {
+                let point = (_.last(points) === -1 || _.last(points) === -2) ? -2 : -1;
+                path.push({point, location});
+                maze[location.x][location.y].isShortestPath = true;
+                score = point;
+            }
+        }
+        // spec.center.x -= (spec.speed * (elapsedTime / 1000));
+        return {maze, currCell, path, score};
     }
 
     function Texture(spec) {
@@ -114,88 +158,23 @@ let Graphics = (()=>{
         };
 
         that.moveNorth=(elapsedTime, maze, cell, path)=>{
-            let currCell = null;
-
-            if(cell.directions.N){
-                let location = cell.location;
-                maze[location.x][location.y].isCurrent = false;
-                maze[cell.directions.N.x][cell.directions.N.y].isCurrent = true;
-                maze[cell.directions.N.x][cell.directions.N.y].isVisited = true;
-                currCell = maze[cell.directions.N.x][cell.directions.N.y];
-
-                if(_.isEqual(cell.directions.N, _.last(path))) {
-                    path.pop();
-                    maze[location.x][location.y].isShortestPath = false;
-                } else {
-                    path.push(location);
-                    maze[location.x][location.y].isShortestPath = true;
-                }
-            }
+            return directionAction('N', elapsedTime, maze, cell, path);
             // spec.center.x -= (spec.speed * (elapsedTime / 1000));
-            return {maze, currCell, path};
         };
 
         that.moveEast=(elapsedTime, maze, cell, path)=>{
-            let currCell = null;
-
-            if(cell.directions.E){
-                let location = cell.location;
-                maze[location.x][location.y].isCurrent = false;
-                maze[cell.directions.E.x][cell.directions.E.y].isCurrent = true;
-                maze[cell.directions.E.x][cell.directions.E.y].isVisited = true;
-                currCell = maze[cell.directions.E.x][cell.directions.E.y];
-                if(_.isEqual(cell.directions.E, _.last(path))) {
-                    path.pop();
-                    maze[location.x][location.y].isShortestPath = false;
-                } else {
-                    path.push(location);
-                    maze[location.x][location.y].isShortestPath = true;
-                }
-            }
+            return directionAction('E', elapsedTime, maze, cell, path);
             // spec.center.x -= (spec.speed * (elapsedTime / 1000));
-            return {maze, currCell, path};
         };
 
         that.moveSouth=(elapsedTime, maze, cell, path)=>{
-            let currCell = null;
-
-            if(cell.directions.S){
-                let location = cell.location;
-                maze[location.x][location.y].isCurrent = false;
-                maze[cell.directions.S.x][cell.directions.S.y].isCurrent = true;
-                maze[cell.directions.S.x][cell.directions.S.y].isVisited = true;
-                currCell = maze[cell.directions.S.x][cell.directions.S.y];
-                if(_.isEqual(cell.directions.S, _.last(path))) {
-                    path.pop();
-                    maze[location.x][location.y].isShortestPath = false;
-                } else {
-                    path.push(location);
-                    maze[location.x][location.y].isShortestPath = true;
-                }
-            }
+            return directionAction('S', elapsedTime, maze, cell, path);
             // spec.rotation -= (spec.rotateRate * (elapsedTime / 1000));
-            return {maze, currCell, path};
         };
 
         that.moveWest=(elapsedTime, maze, cell, path)=>{
-            let currCell = null;
-
-            if(cell.directions.W){
-                let location = cell.location;
-                maze[location.x][location.y].isCurrent = false;
-                maze[cell.directions.W.x][cell.directions.W.y].isCurrent = true;
-                maze[cell.directions.W.x][cell.directions.W.y].isVisited = true;
-                currCell = maze[cell.directions.W.x][cell.directions.W.y];
-                if(_.isEqual(cell.directions.W, _.last(path))) {
-                    path.pop();
-                    maze[location.x][location.y].isShortestPath = false;
-                } else {
-                    path.push(location);
-                    maze[location.x][location.y].isShortestPath = true;
-                }
-            }
+            return directionAction('W', elapsedTime, maze, cell, path);
             // spec.rotation -= (spec.rotateRate * (elapsedTime / 1000));
-            return {maze, currCell, path};
         };
 
         return that;

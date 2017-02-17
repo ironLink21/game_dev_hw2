@@ -9,6 +9,7 @@ class MazeGame {
         this.frontiers = [];
         this.path = [];
         this.playerMoves = [];
+        this.score = 0;
         this.size = size;
 
         this.maze = this.initMaze(size);
@@ -77,6 +78,10 @@ class MazeGame {
                 this.maze = input.maze;
                 this.currCell = (input.currCell) ? input.currCell : this.currCell;
                 this.path = input.path;
+                if(this.currCell.count <= 1) {
+                    this.score += input.score;
+                }
+                console.log(this.score);
             }
         }
     }
@@ -168,7 +173,7 @@ class MazeGame {
             let parent = maze[current.location.x][current.location.y].parent;
             maze[current.location.x][current.location.y].isShortestPath = true;
 
-            this.path.push(current.location);
+            this.path.push({point:5, location: current.location});
 
             current = maze[parent.x][parent.y];
         }
@@ -188,6 +193,7 @@ class MazeGame {
         that.isVisited = false;
         that.isShortestPath = false;
         that.parent = null;
+        that.count = 0;
 
         return that;
     }

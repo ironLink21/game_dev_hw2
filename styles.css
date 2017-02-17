@@ -5,10 +5,10 @@
 
 h1, h4 {
     text-align: center;
-    color: #FFF;
-    background-color: blue;
+    color: #FFD700;
+    background-color: #008000;
 }
 
 #canvas {
-    border: 3px solid #000;
+    border: 5px solid #4169E1;
 }
