@@ -5,23 +5,27 @@ let GameLoop = (()=>{
     let game;
     let elapsedTime;
     let scoreElement;
-    let isFinished = false;
+    let timerElement;
+    let scoreSection;
+    let scores = [];
 
     function update(elapsedTime) {
-        // if(game.currCell === game.endCell) {
-        //     isFinished = true;
-        // }
-        scoreElement.innerHTML = "Score: " + game.getScore();
+        if(_.size(game.maze) > 0) {
+            game.startGame(scoreSection);
+            game.updateTime(timerElement);
+            scoreElement.innerHTML = "Score: " + game.getScore();
+            let output = game.endGame(game, scores, scoreSection);
+
+            game = (output.game) ? output.game : game;
+            scores = (output.scores) ? output.scores : scores;
+        }
     }
 
     function render(elapsedTime) {
         Graphics.beginRender();
-        game.drawMaze();
-
-        // if(isFinished) {
-        //     alert("YOU WON!");
-        //     isFinished = false;
-        // }
+        if(_.size(game.maze) > 0) {
+            game.drawMaze();
+        }
     }
 
     function gameLoop(time) {
@@ -58,13 +62,18 @@ let GameLoop = (()=>{
     }
 
     window.onload=()=>{
+        Graphics.initialize();
         toggleAccordion();
-        game = new MazeGame(5);
+        game = new MazeGame(null);
 
         scoreElement = document.getElementById("score");
+        timerElement = document.getElementById("timer");
+        scoreSection = document.getElementById("score-section");
 
+        game.toggleScores(scores, scoreSection);
+
+        window.addEventListener('keydown', (e)=>{ game.keyDown(e, elapsedTime, scores, scoreSection); });
         window.requestAnimationFrame(gameLoop);
-        window.addEventListener('keydown', (e)=>{ game.keyDown(e, elapsedTime); });
     };
 
     return {

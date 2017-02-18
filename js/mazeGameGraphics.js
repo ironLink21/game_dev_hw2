@@ -14,7 +14,7 @@ let Graphics = (()=>{
         path: '#4169E1'
     };
 
-    function initialize(size) {
+    function initialize(size = 0) {
         canvas = document.getElementById('canvas');
         context = canvas.getContext('2d');
         mySize = size;

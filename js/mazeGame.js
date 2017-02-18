@@ -11,6 +11,10 @@ class MazeGame {
         this.playerMoves = [];
         this.score = 0;
         this.size = size;
+        this.startTime = 0;
+        this.endTime = 0;
+        this.timeObj = {minutes:0, seconds: 0};
+        this.startClick = false;
 
         this.maze = this.initMaze(size);
 
@@ -18,9 +22,12 @@ class MazeGame {
         let y = Math.floor((Math.random() * this.maze.length-1) + 1);
 
         this.currCell = this.createCell({location:{x, y}});
-        this.mark(this.currCell);
+        if(_.size(this.maze) > 0) {
+            this.mark(this.currCell);
+            this.createMaze();
+            this.shortestPath();
+        }
 
-        this.createMaze();
 
         Graphics.initialize(size);
         this.myTexture = Graphics.Texture({});
@@ -29,7 +36,7 @@ class MazeGame {
             [72]: Graphics.toggleHint, // H
             [66]: Graphics.toggleBreadcrumbs, // B
             [80]: Graphics.togglePath, // P
-            // [37]: toggleScore, // Y
+            [89]: this.toggleScores, // Y
 
             [87]: this.myTexture.moveNorth, // w
             [68]: this.myTexture.moveEast, // d
@@ -47,7 +54,6 @@ class MazeGame {
             [37]: this.myTexture.moveWest, // V
         };
 
-        this.shortestPath();
     }
 
     initMaze(size) {
@@ -70,10 +76,16 @@ class MazeGame {
         return {dir, cell};
     }
 
-    keyDown(e, elapsedTime) {
+    keyDown(e, elapsedTime, scores, scoreSection) {
         // console.log(e.key, e.keyCode);
         if (this.inputDispatch.hasOwnProperty(e.keyCode)) {
-            let input = this.inputDispatch[e.keyCode](elapsedTime, this.maze, this.currCell, this.path);
+            let input = null;
+            if(e.keyCode === 89) {
+                this.inputDispatch[e.keyCode](scores, scoreSection);
+            } else {
+                input = this.inputDispatch[e.keyCode](elapsedTime, this.maze, this.currCell, this.path);
+            }
+
             if(input) {
                 this.maze = input.maze;
                 this.currCell = (input.currCell) ? input.currCell : this.currCell;
@@ -179,6 +191,52 @@ class MazeGame {
 
         this.maze = maze;
     }
+
+    updateTime(element) {
+        let time = new Date();
+
+        if(this.startClick) {
+            let minutes = time.getMinutes() - this.startTime.getMinutes();
+            let seconds = time.getSeconds();
+            element.innerHTML = "Timer: " + minutes + ":" + seconds;
+            this.timeObj.seconds = {minutes, seconds};
+        }
+    }
+
+    startGame(scoreSection) {
+        this.startClick = true;
+        this.startTime = new Date();
+        scoreSection.style.display = 'none';
+    }
+
+    endGame(game, scores, scoreSection) {
+        if(_.isEqual(this.currCell, this.endCell)) {
+            this.startClick = false;
+            this.endTime = new Date();
+            let minutes = this.endTime.getMinutes() - this.startTime.getMinutes();
+            let seconds = this.endTime.getSeconds() - this.startTime.getSeconds();
+            this.timeObj.seconds = {minutes, seconds};
+
+            let time = minutes + ":" + seconds;
+            let score = this.score;
+
+            scores.push({score:score, time});
+
+            this.toggleScores(scores, scoreSection);
+
+            this.currCell = {};
+            this.score = 0;
+            this.endTime = 0;
+            this.startTime = 0;
+            return {game:null, scores};
+        }
+
+        return {game};
+    }
+
+    getScore() {
+        return this.score;
+    }
 // ****** maze functions end ******
 
 // ****** create functions ******
@@ -247,19 +305,24 @@ class MazeGame {
     togglePath() {
         this.isShortVisible = (this.isShortVisible) ? false : true;
     }
-
-    getScore() {
-        return this.score;
-    }
 // ****** render functions end ******
 
 // ****** interface functions ******
-    toggleAccordion() {
+    toggleScores(scores, scoreSection) {
+        if(scores.length <= 0) {
+            scoreSection.innerHTML = "<div id='start-game'>Pick a maze size to start</div>";
+            scoreSection.style.display = 'block';
+        } else {
+            scoreSection.innerHTML = "";
+            scores = _.sortBy(scores, 'score');
 
-    }
-
-    toggleMazeSize(size) {
-
+            _.each(scores, (score, i)=>{
+                ++i;
+                scoreSection.innerHTML += "<span class='score-card'>" + i + ". &nbsp;&nbsp;<div>Time: " + score.time + "</div>&nbsp;&nbsp;<div>Score: " + score.score + "</div></span><br>";
+            });
+            scoreSection.style.display = 'block';
+            this.maze = null;
+        }
     }
 // ****** interface functions end ******
 }
