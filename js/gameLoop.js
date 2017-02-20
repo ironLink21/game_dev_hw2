@@ -3,6 +3,7 @@ let GameLoop = (()=>{
 
     let prevTime = 0;
     let game;
+    let player;
     let elapsedTime;
     let scoreElement;
     let timerElement;
@@ -18,6 +19,7 @@ let GameLoop = (()=>{
 
             game = (output.game) ? output.game : game;
             scores = (output.scores) ? output.scores : scores;
+            // player.update(elapsedTime, game.currCell.location);
         }
     }
 
@@ -41,6 +43,7 @@ let GameLoop = (()=>{
 
     function toggleMazeSize(size) {
         game = new MazeGame(size);
+        // player = new Player({cell: game.startCell.location, imageSource: '../assets/navi.png'});
     }
 
     function toggleAccordion() {
@@ -70,7 +73,7 @@ let GameLoop = (()=>{
         timerElement = document.getElementById("timer");
         scoreSection = document.getElementById("score-section");
 
-        game.toggleScores(scores, scoreSection);
+        game.toggleScores({scores, scoreSection});
 
         window.addEventListener('keydown', (e)=>{ game.keyDown(e, elapsedTime, scores, scoreSection); });
         window.requestAnimationFrame(gameLoop);

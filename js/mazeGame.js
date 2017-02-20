@@ -30,7 +30,7 @@ class MazeGame {
 
 
         Graphics.initialize(size);
-        this.myTexture = Graphics.Texture({});
+        this.myPlayer = Graphics.Player();
 
         this.inputDispatch = {
             [72]: Graphics.toggleHint, // H
@@ -38,20 +38,20 @@ class MazeGame {
             [80]: Graphics.togglePath, // P
             [89]: this.toggleScores, // Y
 
-            [87]: this.myTexture.moveNorth, // w
-            [68]: this.myTexture.moveEast, // d
-            [83]: this.myTexture.moveSouth, // s
-            [65]: this.myTexture.moveWest, // a
+            [87]: this.myPlayer.moveNorth, // w
+            [68]: this.myPlayer.moveEast, // d
+            [83]: this.myPlayer.moveSouth, // s
+            [65]: this.myPlayer.moveWest, // a
 
-            [73]: this.myTexture.moveNorth, // i
-            [76]: this.myTexture.moveEast, // l
-            [75]: this.myTexture.moveSouth, // k
-            [74]: this.myTexture.moveWest, // j
+            [73]: this.myPlayer.moveNorth, // i
+            [76]: this.myPlayer.moveEast, // l
+            [75]: this.myPlayer.moveSouth, // k
+            [74]: this.myPlayer.moveWest, // j
 
-            [38]: this.myTexture.moveNorth, // ^
-            [39]: this.myTexture.moveEast, // >
-            [40]: this.myTexture.moveSouth, // <
-            [37]: this.myTexture.moveWest, // V
+            [38]: this.myPlayer.moveNorth, // ^
+            [39]: this.myPlayer.moveEast, // >
+            [40]: this.myPlayer.moveSouth, // <
+            [37]: this.myPlayer.moveWest, // V
         };
 
     }
@@ -80,11 +80,7 @@ class MazeGame {
         // console.log(e.key, e.keyCode);
         if (this.inputDispatch.hasOwnProperty(e.keyCode)) {
             let input = null;
-            if(e.keyCode === 89) {
-                this.inputDispatch[e.keyCode](scores, scoreSection);
-            } else {
-                input = this.inputDispatch[e.keyCode](elapsedTime, this.maze, this.currCell, this.path);
-            }
+            input = this.inputDispatch[e.keyCode]({elapsedTime, maze:this.maze, cell:this.currCell, path:this.path, scores, scoreSection});
 
             if(input) {
                 this.maze = input.maze;
@@ -222,7 +218,7 @@ class MazeGame {
 
             scores.push({score:score, time});
 
-            this.toggleScores(scores, scoreSection);
+            this.toggleScores({scores, scoreSection});
 
             this.currCell = {};
             this.score = 0;
@@ -308,19 +304,19 @@ class MazeGame {
 // ****** render functions end ******
 
 // ****** interface functions ******
-    toggleScores(scores, scoreSection) {
-        if(scores.length <= 0) {
-            scoreSection.innerHTML = "<div id='start-game'>Pick a maze size to start</div>";
-            scoreSection.style.display = 'block';
+    toggleScores(spec) {
+        if(spec.scores.length <= 0) {
+            spec.scoreSection.innerHTML = "<div id='start-game'>Pick a maze size to start</div>";
+            spec.scoreSection.style.display = 'block';
         } else {
-            scoreSection.innerHTML = "";
-            scores = _.sortBy(scores, 'score');
+            spec.scoreSection.innerHTML = "";
+            spec.scores = _.sortBy(spec.scores, 'score');
 
-            _.each(scores, (score, i)=>{
+            _.each(spec.scores, (score, i)=>{
                 ++i;
-                scoreSection.innerHTML += "<span class='score-card'>" + i + ". &nbsp;&nbsp;<div>Time: " + score.time + "</div>&nbsp;&nbsp;<div>Score: " + score.score + "</div></span><br>";
+                spec.scoreSection.innerHTML += "<span class='score-card'>" + i + ". &nbsp;&nbsp;<div>Time: " + score.time + "</div>&nbsp;&nbsp;<div>Score: " + score.score + "</div></span><br>";
             });
-            scoreSection.style.display = 'block';
+            spec.scoreSection.style.display = 'block';
             this.maze = null;
         }
     }

@@ -49,7 +49,7 @@ let Graphics = (()=>{
                 if(isShortVisible && spec.isShortestPath) {
                     fillColor = colors.path;
 
-                } else if (isHintVisible && _.isEqual(hint, spec.location)) {
+                } else if (isHintVisible && _.isEqual(hint.location, spec.location)) {
                     fillColor = 'rgba(238, 36, 188, 0.5)';
 
                 } else if (isBreadVisible && spec.isVisited) {
@@ -107,74 +107,58 @@ let Graphics = (()=>{
         return that;
     }
 
-    function directionAction(type, elapsedTime, maze, cell, path) {
+    function directionAction(type, spec) {
         let currCell = null;
         let score = null;
 
-        let pathDir = _.map(path ,(i)=>{
+        let pathDir = _.map(spec.path ,(i)=>{
             return i.location;
         });
 
-        let points = _.map(path ,(i)=>{
+        let points = _.map(spec.path ,(i)=>{
             return i.point;
         });
 
-        if(cell.directions[type]){
-            let location = cell.location;
-            maze[location.x][location.y].isCurrent = false;
-            maze[cell.directions[type].x][cell.directions[type].y].isCurrent = true;
-            maze[cell.directions[type].x][cell.directions[type].y].isVisited = true;
-            maze[cell.directions[type].x][cell.directions[type].y].count++;
-            currCell = maze[cell.directions[type].x][cell.directions[type].y];
+        if(spec.cell.directions[type]){
+            let location = spec.cell.location;
+            spec.maze[location.x][location.y].isCurrent = false;
+            spec.maze[spec.cell.directions[type].x][spec.cell.directions[type].y].isCurrent = true;
+            spec.maze[spec.cell.directions[type].x][spec.cell.directions[type].y].isVisited = true;
+            spec.maze[spec.cell.directions[type].x][spec.cell.directions[type].y].count++;
+            currCell = spec.maze[spec.cell.directions[type].x][spec.cell.directions[type].y];
 
-            if(_.isEqual(cell.directions[type], _.last(pathDir))) {
-                let element = path.pop();
-                maze[location.x][location.y].isShortestPath = false;
+            if(_.isEqual(spec.cell.directions[type], _.last(pathDir))) {
+                let element = spec.path.pop();
+                spec.maze[location.x][location.y].isShortestPath = false;
                 score = element.point;
             } else {
                 let point = (_.last(points) === -1 || _.last(points) === -2) ? -2 : -1;
-                path.push({point, location});
-                maze[location.x][location.y].isShortestPath = true;
+                spec.path.push({point, location});
+                spec.maze[location.x][location.y].isShortestPath = true;
                 score = point;
             }
         }
-        // spec.center.x -= (spec.speed * (elapsedTime / 1000));
-        return {maze, currCell, path, score};
+
+        return {maze: spec.maze, currCell, path: spec.path, score};
     }
 
-    function Texture(spec) {
+    function Player() {
         var that = {};
-            // ready = false,
-            // image = new Image();
 
-        // image.onload =()=>{
-        //     ready = true;
-        // };
-
-        // image.src = spec.imageSource;
-
-        that.update=()=>{
-            //spec.rotation += 0.01;
+        that.moveNorth=(spec)=>{
+            return directionAction('N', spec);
         };
 
-        that.moveNorth=(elapsedTime, maze, cell, path)=>{
-            return directionAction('N', elapsedTime, maze, cell, path);
-            // spec.center.x -= (spec.speed * (elapsedTime / 1000));
+        that.moveEast=(spec)=>{
+            return directionAction('E', spec);
         };
 
-        that.moveEast=(elapsedTime, maze, cell, path)=>{
-            return directionAction('E', elapsedTime, maze, cell, path);
-            // spec.center.x -= (spec.speed * (elapsedTime / 1000));
+        that.moveSouth=(spec)=>{
+            return directionAction('S', spec);
         };
 
-        that.moveSouth=(elapsedTime, maze, cell, path)=>{
-            return directionAction('S', elapsedTime, maze, cell, path);
-            // spec.rotation -= (spec.rotateRate * (elapsedTime / 1000));
-        };
-
-        that.moveWest=(elapsedTime, maze, cell, path)=>{
-            return directionAction('W', elapsedTime, maze, cell, path);
-            // spec.rotation -= (spec.rotateRate * (elapsedTime / 1000));
+        that.moveWest=(spec)=>{
+            return directionAction('W', spec);
         };
 
         return that;
@@ -184,23 +168,24 @@ let Graphics = (()=>{
         context.clear();
     }
 
-    function togglePath(elapsedTime) {
+    function togglePath() {
         isShortVisible = (isShortVisible) ? false : true;
     }
 
-    function toggleHint(elapsedTime, maze = null, currCell = null, path) {
+    function toggleHint(spec) {
         isHintVisible = (isHintVisible) ? false : true;
-        hint = _.last(path);
+        hint = _.last(spec.path);
     }
 
-    function toggleBreadcrumbs(elapsedTime) {
+    function toggleBreadcrumbs() {
         isBreadVisible = (isBreadVisible) ? false : true;
     }
 
     return {
         initialize,
+        context,
+        Player,
         Cell,
-        Texture,
         beginRender,
         togglePath,
         toggleHint,
