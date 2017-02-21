@@ -15,6 +15,7 @@ class MazeGame {
         this.endTime = 0;
         this.timeObj = {minutes:0, seconds: 0};
         this.startClick = false;
+        this.isScoreVisible = false;
 
         this.maze = this.initMaze(size);
 
@@ -220,6 +221,7 @@ class MazeGame {
             this.score = 0;
             this.endTime = 0;
             this.startTime = 0;
+            this.maze = null;
             return {game:null, scores};
         }
 
@@ -286,16 +288,20 @@ class MazeGame {
 
 // ****** render functions ******
     drawMaze() {
-        for(let x in this.maze) {
-            for(let y in this.maze[x]) {
-                let cell = Graphics.Cell(this.maze[x][y]);
-                cell.draw();
+        if(!this.isScoreVisible) {
+            for(let x in this.maze) {
+                for(let y in this.maze[x]) {
+                    let cell = Graphics.Cell(this.maze[x][y]);
+                    cell.draw();
+                }
             }
         }
     }
 
     drawPlayer() {
-        this.myPlayer.draw();
+        if(!this.isScoreVisible) {
+            this.myPlayer.draw();
+        }
     }
 
     togglePath() {
@@ -305,6 +311,9 @@ class MazeGame {
 
 // ****** interface functions ******
     toggleScores(spec) {
+        let isScoreVisible = (this.isScoreVisible) ? false : true;
+        this.isScoreVisible = isScoreVisible;
+
         if(spec.scores.length <= 0) {
             spec.scoreSection.innerHTML = "<div id='start-game'>Pick a maze size to start</div>";
             spec.scoreSection.style.display = 'block';
@@ -317,7 +326,6 @@ class MazeGame {
                 spec.scoreSection.innerHTML += "<span class='score-card'>" + i + ". &nbsp;&nbsp;<div>Time: " + score.time + "</div>&nbsp;&nbsp;<div>Score: " + score.score + "</div></span><br>";
             });
             spec.scoreSection.style.display = 'block';
-            this.maze = null;
         }
     }
 // ****** interface functions end ******
