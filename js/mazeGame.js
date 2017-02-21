@@ -194,8 +194,8 @@ class MazeGame {
         if(this.startClick) {
             let minutes = time.getMinutes() - this.startTime.getMinutes();
             let seconds = time.getSeconds();
+            this.timeObj = {minutes, seconds};
             element.innerHTML = "Timer: " + minutes + ":" + seconds;
-            this.timeObj.seconds = {minutes, seconds};
         }
     }
 
@@ -208,12 +208,8 @@ class MazeGame {
     endGame(game, scores, scoreSection) {
         if(_.isEqual(this.currCell, this.endCell)) {
             this.startClick = false;
-            this.endTime = new Date();
-            let minutes = this.endTime.getMinutes() - this.startTime.getMinutes();
-            let seconds = this.endTime.getSeconds() - this.startTime.getSeconds();
-            this.timeObj.seconds = {minutes, seconds};
 
-            let time = minutes + ":" + seconds;
+            let time = this.timeObj.minutes + ":" + this.timeObj.seconds;
             let score = this.score;
 
             scores.push({score:score, time});
