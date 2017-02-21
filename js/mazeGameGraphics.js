@@ -7,6 +7,8 @@ let Graphics = (()=>{
     let isShortVisible = false;
     let isHintVisible = false;
     let isBreadVisible = false;
+    let player = null;
+    let playerF = null;
     let hint = {};
     let colors = {
         wall: 'rgba(0, 128, 0, 1)',
@@ -14,10 +16,10 @@ let Graphics = (()=>{
         path: '#4169E1'
     };
 
-    function initialize(size = 0) {
+    function init(spec) {
         canvas = document.getElementById('canvas');
         context = canvas.getContext('2d');
-        mySize = size;
+        mySize = spec.size;
 
         CanvasRenderingContext2D.prototype.clear = function() {
             this.save();
@@ -25,6 +27,22 @@ let Graphics = (()=>{
             this.clearRect(0, 0, canvas.width, canvas.height);
             this.restore();
         };
+
+        let width = canvas.width / spec.size;
+        let height = canvas.height / spec.size;
+        let speed = 100;
+        let cell = spec.cell;
+        let imageSource = './assets/navi.png';
+
+        player = Player.player({context, width, height, speed, cell, imageSource});
+
+        width = canvas.width / spec.size;
+        height = canvas.height / spec.size;
+        speed = 100;
+        cell = spec.finished;
+        imageSource = './assets/link_breath.png';
+
+        playerF = Player.player({context, width, height, speed, cell, imageSource});
     }
 
     function Cell(spec) {
@@ -58,10 +76,6 @@ let Graphics = (()=>{
                 } else {
                     fillColor = colors.floor;
                 }
-            }
-
-            if(spec.isCurrent) {
-                fillColor = 'rgba(255, 165, 0, 0.5)';
             }
 
             context.fillStyle = fillColor;
@@ -119,13 +133,15 @@ let Graphics = (()=>{
             return i.point;
         });
 
-        if(spec.cell.directions[type]){
+        if(spec.cell && spec.cell.directions[type]){
             let location = spec.cell.location;
             spec.maze[location.x][location.y].isCurrent = false;
             spec.maze[spec.cell.directions[type].x][spec.cell.directions[type].y].isCurrent = true;
             spec.maze[spec.cell.directions[type].x][spec.cell.directions[type].y].isVisited = true;
             spec.maze[spec.cell.directions[type].x][spec.cell.directions[type].y].count++;
             currCell = spec.maze[spec.cell.directions[type].x][spec.cell.directions[type].y];
+
+            player.move({type, elapsedTime:spec.elapsedTime, cell: currCell});
 
             if(_.isEqual(spec.cell.directions[type], _.last(pathDir))) {
                 let element = spec.path.pop();
@@ -139,10 +155,10 @@ let Graphics = (()=>{
             }
         }
 
-        return {maze: spec.maze, currCell, path: spec.path, score};
+        return { maze: spec.maze, currCell, path: spec.path, score };
     }
 
-    function Player() {
+    function PlayerObj() {
         var that = {};
 
         that.moveNorth=(spec)=>{
@@ -159,6 +175,11 @@ let Graphics = (()=>{
 
         that.moveWest=(spec)=>{
             return directionAction('W', spec);
+        };
+
+        that.draw=()=>{
+            player.draw();
+            playerF.draw();
         };
 
         return that;
@@ -182,9 +203,9 @@ let Graphics = (()=>{
     }
 
     return {
-        initialize,
+        init,
         context,
-        Player,
+        PlayerObj,
         Cell,
         beginRender,
         togglePath,

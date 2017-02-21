@@ -26,11 +26,11 @@ class MazeGame {
             this.mark(this.currCell);
             this.createMaze();
             this.shortestPath();
+
+            Graphics.init({size, cell:this.currCell, finished:this.endCell});
         }
 
-
-        Graphics.initialize(size);
-        this.myPlayer = Graphics.Player();
+        this.myPlayer = Graphics.PlayerObj();
 
         this.inputDispatch = {
             [72]: Graphics.toggleHint, // H
@@ -296,6 +296,10 @@ class MazeGame {
                 cell.draw();
             }
         }
+    }
+
+    drawPlayer() {
+        this.myPlayer.draw();
     }
 
     togglePath() {

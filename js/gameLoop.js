@@ -27,6 +27,7 @@ let GameLoop = (()=>{
         Graphics.beginRender();
         if(_.size(game.maze) > 0) {
             game.drawMaze();
+            game.drawPlayer();
         }
     }
 
@@ -65,7 +66,7 @@ let GameLoop = (()=>{
     }
 
     window.onload=()=>{
-        Graphics.initialize();
+        Graphics.init({size:0, cell:{location:{x:0,y:0}}, finished:{location:{x:0,y:0}}});
         toggleAccordion();
         game = new MazeGame(null);
 

@@ -1,56 +1,68 @@
-'use strict';
+let Player = (()=>{
+    'use strict';
 
-class Player {
-    constructor(spec) {
-        this.currCell = spec.cell;
-        this.center = {x:0, y:0};
-        this.width = spec.width;
-        this.height = spec.height;
-        this.speed = spec.speed;
-        this.moves = [];
+    function player(spec) {
+        let that = {};
 
-        this.ready = false,
-        this.image = new Image();
+        let width = spec.width;
+        let height = spec.height;
+        let speed = spec.speed;
+        let context = spec.context;
 
-        this.image.onload=()=>{
-            this.ready = true;
+        let center = {x:(spec.cell.location.x*width)/2, y:(spec.cell.location.y*height)/2};
+        let moves = [];
+
+        let ready = false;
+        let image = new Image();
+
+        image.onload=()=>{
+            ready = true;
         };
 
-        this.image.src = spec.imageSource;
+        image.src = spec.imageSource;
+
+        that.move=(spec)=>{
+            center = {x:(spec.cell.location.x*width)/2, y:(spec.cell.location.y*height)/2};
+
+            switch(spec.type) {
+                case 'N':
+                    center.y -= (speed * (spec.elapsedTime / 1000));
+                    break;
+                case 'E':
+                    center.x += (speed * (spec.elapsedTime / 1000));
+                    break;
+                case 'S':
+                    center.y += (speed * (spec.elapsedTime / 1000));
+                    break;
+                case 'W':
+                    center.x -= (speed * (spec.elapsedTime / 1000));
+                    break;
+                default:
+            }
+
+        };
+
+        that.draw=()=>{
+            if (ready) {
+                context.save();
+
+                context.translate(center.x, center.y);
+
+                context.drawImage(
+                    image,
+                    center.x,
+                    center.y,
+                    width, height
+                );
+
+                context.restore();
+            }
+        };
+
+        return that;
     }
 
-    update(elapsedTime, cell) {
-        //spec.rotation += 0.01;
-    }
-
-    moveNorth(elapsedTime) {
-        this.center.y -= (this.speed * (spec.elapsedTime / 1000));
-    }
-
-    moveEast(elapsedTime, speed) {
-        this.center.x += (this.speed * (spec.elapsedTime / 1000));
-    }
-
-    moveSouth(elapsedTime, speed) {
-        this.center.y += (this.speed * (spec.elapsedTime / 1000));
-    }
-
-    moveWest(elapsedTime, speed) {
-        this.center.x -= (this.speed * (spec.elapsedTime / 1000));
-    }
-
-    draw(context) {
-        if (this.ready) {
-            context.save();
-
-            context.translate(this.center.x, this.center.y);
-
-            context.drawImage( this.image,
-                               this.center.x - this.width / 2,
-                               this.center.y - this.height / 2,
-                               this.width, this.height );
-
-            context.restore();
-        }
-    }
-}
+    return {
+        player
+    };
+})();
